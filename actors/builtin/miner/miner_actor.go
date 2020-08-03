@@ -823,7 +823,7 @@ func (a Actor) ExtendSectorExpiration(rt Runtime, params *ExtendSectorExpiration
 			partitions, err := deadline.PartitionsArray(store)
 			builtin.RequireNoErr(rt, err, exitcode.ErrIllegalState, "failed to load partitions for deadline %d", dlIdx)
 
-			quant := NewDeadlineInfo(st.ProvingPeriodStart, dlIdx, rt.CurrEpoch()).QuantSpec()
+			quant := st.QuantSpecForDeadline(dlIdx)
 
 			for _, decl := range declsByDeadline[dlIdx] {
 				key := PartitionKey{dlIdx, decl.Partition}
@@ -955,7 +955,7 @@ func (a Actor) TerminateSectors(rt Runtime, params *TerminateSectorsParams) *Ter
 		builtin.RequireNoErr(rt, err, exitcode.ErrIllegalState, "failed to load sectors")
 
 		err = toProcess.ForEach(func(dlIdx uint64, partitionSectors PartitionSectorMap) error {
-			quant := NewDeadlineInfo(st.ProvingPeriodStart, dlIdx, rt.CurrEpoch()).QuantSpec()
+			quant := st.QuantSpecForDeadline(dlIdx)
 
 			deadline, err := deadlines.LoadDeadline(store, dlIdx)
 			builtin.RequireNoErr(rt, err, exitcode.ErrIllegalState, "failed to load deadline %d", dlIdx)
@@ -1172,7 +1172,7 @@ func (a Actor) CompactPartitions(rt Runtime, params *CompactPartitionsParams) *a
 			rt.Abortf(exitcode.ErrIllegalArgument, "too many partitions %d, limit %d", partitionCount, submissionPartitionLimit)
 		}
 
-		quant := NewDeadlineInfo(st.ProvingPeriodStart, params.Deadline, rt.CurrEpoch()).QuantSpec()
+		quant := st.QuantSpecForDeadline(params.Deadline)
 
 		deadlines, err := st.LoadDeadlines(store)
 		builtin.RequireNoErr(rt, err, exitcode.ErrIllegalState, "failed to load deadlines")
